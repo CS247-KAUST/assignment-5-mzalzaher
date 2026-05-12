@@ -37,6 +37,19 @@ bool en_pathline;
 int sampling_rate;
 float dt;
 
+// false = constant NDC arrow length; true = length scales with |v| (normalized by max on sampled grid)
+bool glyph_length_by_magnitude;
+
+// false = explicit Euler streamlines; true = RK2 midpoint (Heun-style 2nd order) in grid space
+bool streamline_use_rk2;
+
+// TODO: define colormap variables
+// Hint: you need a colormap mode (off/rainbow/cool-warm) and a blend factor
+// scalar quad: 0 = original texture (grayscale), 1 = rainbow, 2 = cool-warm (see fragment.fs)
+int colormap_mode;
+// 0 = all grayscale, 1 = full colormap (mix in shader when colormap_mode != 0)
+float scalar_colormap_blend;
+
 
 
 
@@ -67,6 +80,21 @@ float* scalar_bounds;
 
 GLuint scalar_field_texture;
 
+GLuint glyphVAO;
+GLuint glyphVBO;
+
+GLuint streamlineVAO;
+GLuint streamlineVBO;
+
+GLuint pathlineVAO;
+GLuint pathlineVBO;
+
+// streamline seeds in continuous grid coordinates
+std::vector<glm::vec2> streamline_seeds;
+
+// pathline seeds
+std::vector<glm::vec3> pathline_seeds;
+
 int num_scalar_fields;
 int num_timesteps; //stores number of time steps
 
@@ -86,9 +114,15 @@ int toggle_xy;
 
 void drawGlyphs();
 
-void computeStreamline(int x, int y);
+void rebuildAllStreamlines();
+void drawStreamlines();
 
-void computePathline(int x, int y, int t);
+void rebuildAllPathlines();
+void drawPathlines();
+
+void computeStreamline(float gx, float gy);
+
+void computePathline(float gx, float gy);
 
 void loadNextTimestep( void );
 
@@ -102,9 +136,6 @@ void reset_rendering_props( void );
 
 // TODO: define data arrays, VAO and VBO
 // Hint: you need one for the glyphs, streamlines, pathlines
-
-// TODO: define colormap variables
-// Hint: you need a colormap mode (off/rainbow/cool-warm) and a blend factor
 
 // make quad to load texture to
 VBOQuad quad;
